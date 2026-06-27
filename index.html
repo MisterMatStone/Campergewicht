@@ -124,9 +124,9 @@ var FIREBASE_CONFIG = {
 var db  = null;
 var DOC = null;
 
-const MAX_WEIGHT = 3500;
+var MAX_WEIGHT = 3500;
 
-const DEFAULT_STATE = {
+var DEFAULT_STATE = {
   appName: "Camper Gewicht",
   baseWeights: [
     { id: 1, name: "Leergewicht Fahrzeug", weight: 3120 },
@@ -151,7 +151,7 @@ const DEFAULT_STATE = {
   history: [],
 };
 
-let state = {
+var state = {
   appName:     DEFAULT_STATE.appName,
   baseWeights: JSON.parse(JSON.stringify(DEFAULT_STATE.baseWeights)),
   categories:  [...DEFAULT_STATE.categories],
@@ -164,12 +164,20 @@ let state = {
   syncStatus:  "Verbindet…",
 };
 
-let saveTimeout = null;
+var saveTimeout = null;
 function saveAll() {
+  // Sofort in localStorage speichern
+  saveToLocalStorage();
+  // Firebase im Hintergrund
   clearTimeout(saveTimeout);
   state.syncStatus = "Speichert…";
   updateSyncIndicator();
-  saveTimeout = setTimeout(() => {
+  saveTimeout = setTimeout(function() {
+    if (!DOC) {
+      state.syncStatus = "⚠ Offline";
+      updateSyncIndicator();
+      return;
+    }
     DOC.set({
       appName:     state.appName,
       baseWeights: state.baseWeights,
@@ -177,11 +185,11 @@ function saveAll() {
       items:       state.items,
       sets:        state.sets,
       history:     state.history,
-    }).then(() => {
+    }).then(function() {
       state.syncStatus = "✓ Gespeichert";
       updateSyncIndicator();
-    }).catch(e => {
-      state.syncStatus = "⚠ Fehler";
+    }).catch(function(e) {
+      state.syncStatus = "⚠ Offline";
       updateSyncIndicator();
     });
   }, 600);
