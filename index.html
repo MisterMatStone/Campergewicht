@@ -768,8 +768,7 @@ function renderDocs() {
 
   // ── Dokumentenliste ──
   if (state.docs.length === 0) {
-    content.appendChild(h("div",{class:"empty"},"Noch keine Dokumente vorhanden.
-Tippe oben auf ⚙ um Dokumente hinzuzufügen."));
+    content.appendChild(h("div",{class:"empty"},"Noch keine Dokumente vorhanden. Tippe oben auf ⚙ um Dokumente hinzuzufügen."));
   }
   state.docs.forEach(function(doc) {
     content.appendChild(h("a", {class:"doc-card", href:doc.url, target:"_blank"},
