@@ -232,7 +232,7 @@ function applyData(d) {
   state.appIcon    = d.appIcon    || null;
   state.modules    = d.modules    || JSON.parse(JSON.stringify(DEFAULT_STATE.modules));
   state.categories = d.categories || DEFAULT_STATE.categories.slice();
-  state.items      = (d.items     || JSON.parse(JSON.stringify(DEFAULT_STATE.items))).map(function(i){ return Object.assign({basis:false}, i); });
+  state.items      = (d.items     || JSON.parse(JSON.stringify(DEFAULT_STATE.items))).map(function(i){ if(typeof i.basis === "undefined") i.basis = false; return i; });
   state.sets       = d.sets       || JSON.parse(JSON.stringify(DEFAULT_STATE.sets));
   state.history    = d.history    || [];
   state.docs       = d.docs       || [];
@@ -702,10 +702,26 @@ function renderGewicht() {
       catSel.addEventListener("change",function(){item.category=catSel.value;saveAll();});
       var detail=h("div",{style:{fontSize:"12px",color:"#8a7a6a",marginTop:"3px"}});
       detail.appendChild(wEl); detail.appendChild(document.createTextNode(" kg · ")); detail.appendChild(catSel);
+      // Basis-Toggle
+      var basisBtn = h("button", {
+        style:{fontSize:"11px",padding:"3px 8px",borderRadius:"6px",border:"1.5px solid",
+          borderColor: item.basis?"#5a7c5a":"#c0b8ac",
+          background: item.basis?"#e8f0e8":"transparent",
+          color: item.basis?"#5a7c5a":"#8a7a6a",
+          fontWeight: item.basis?"600":"400",
+          cursor:"pointer",whiteSpace:"nowrap",fontFamily:"inherit"},
+        onClick:(function(it){ return function(){
+          it.basis = !it.basis;
+          if(it.basis) state.selected.delete(it.id);
+          saveAll(); renderGewicht();
+        }; })(item)
+      }, item.basis ? "Basis" : "variabel");
+
       content.appendChild(h("div",{class:"item-row"},
         h("div",{class:"flex1"},nameEl,detail),
         h("div",{style:{display:"flex",gap:"6px",alignItems:"center"}},
-          state.selected.has(item.id)?h("span",{class:"selected-badge"},"✓ aktiv"):h("span",null,""),
+          basisBtn,
+          !item.basis && state.selected.has(item.id)?h("span",{class:"selected-badge"},"aktiv"):h("span",null,""),
           h("button",{class:"btn-delete",onClick:(function(it){ return function(){
             state.items=state.items.filter(function(i){return i.id!==it.id;});
             state.selected.delete(it.id);
