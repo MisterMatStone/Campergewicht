@@ -348,8 +348,14 @@ function renderHome() {
 
   var modules = h("div", {class:"home-modules"});
   state.modules.forEach(function(mod) {
-    modules.appendChild(h("button", {class:"module-btn", onClick: function(){ showScreen(mod.id); }},
-      h("span", {class:"module-icon"}, mod.icon),
+    var iconEl;
+    if (mod.iconImage) {
+      iconEl = h("img", {src: mod.iconImage, style:{width:"48px",height:"48px",borderRadius:"12px",objectFit:"cover",flexShrink:"0"}});
+    } else {
+      iconEl = h("span", {class:"module-icon"}, mod.icon || "📦");
+    }
+    modules.appendChild(h("button", {class:"module-btn", onClick: (function(m){ return function(){ showScreen(m.id); }; })(mod)},
+      iconEl,
       h("div", {class:"flex1"},
         h("div", {class:"module-name"}, mod.name),
         h("div", {class:"module-desc"}, mod.desc)
@@ -397,14 +403,51 @@ function renderHomeSettings() {
   state.modules.forEach(function(mod) {
     var nameEl = inlineEdit(mod.name, function(v){ mod.name=v; saveAll(); });
     nameEl.style.cssText = "flex:1;font-size:14px;font-weight:600;color:#2c2416;";
-    var iconEl = inlineEdit(mod.icon, function(v){ mod.icon=v; saveAll(); });
-    iconEl.style.cssText = "font-size:24px;cursor:pointer;";
     var descEl = inlineEdit(mod.desc || "", function(v){ mod.desc=v; saveAll(); });
     descEl.style.cssText = "font-size:12px;color:#8a7a6a;";
 
+    // Icon: Bild oder Emoji
+    var iconPreview;
+    if (mod.iconImage) {
+      iconPreview = h("img", {src: mod.iconImage, style:{width:"44px",height:"44px",borderRadius:"10px",objectFit:"cover",flexShrink:"0"}});
+    } else {
+      iconPreview = h("span", {style:{fontSize:"36px",flexShrink:"0",lineHeight:"1"}}, mod.icon || "📦");
+    }
+
+    // Upload-Input (unsichtbar)
+    var uploadInp = document.createElement("input");
+    uploadInp.type = "file"; uploadInp.accept = "image/*"; uploadInp.style.display = "none";
+    uploadInp.addEventListener("change", (function(m, preview) {
+      return function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 200000) { alert("Bild zu groß (max. 200KB)"); return; }
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+          m.iconImage = ev.target.result;
+          m.icon = "";
+          saveAll();
+          renderHomeSettings();
+        };
+        reader.readAsDataURL(file);
+      };
+    })(mod, iconPreview));
+
+    var uploadBtn = h("button", {class:"btn-ghost", style:{fontSize:"11px",padding:"4px 8px",marginTop:"4px",display:"block"},
+      onClick: function(){ uploadInp.click(); }}, "📁 Bild wählen");
+
+    var removeBtn = mod.iconImage
+      ? h("button", {class:"btn-ghost", style:{fontSize:"11px",padding:"4px 8px",marginTop:"4px",display:"block",color:"#c0392b"},
+          onClick: (function(m){ return function(){ m.iconImage = null; m.icon = "📦"; saveAll(); renderHomeSettings(); }; })(mod)}, "✕ Entfernen")
+      : h("span", null, "");
+
+    var iconBox = h("div", {style:{display:"flex",flexDirection:"column",alignItems:"center",gap:"2px",flexShrink:"0"}},
+      iconPreview, uploadInp, uploadBtn, removeBtn
+    );
+
     modCard.appendChild(h("div", {class:"basis-item"},
-      iconEl,
-      h("div", {class:"flex1", style:{marginLeft:"8px"}},
+      iconBox,
+      h("div", {class:"flex1", style:{marginLeft:"12px"}},
         nameEl,
         descEl
       )
