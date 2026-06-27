@@ -71,7 +71,7 @@
 
     /* ── Home Screen ── */
     #home-screen { max-width: 680px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
-    .home-header { background: #2c3e2d; color: #f0ebe0; padding: 40px 24px 32px; display: flex; justify-content: space-between; align-items: flex-start; }
+    .home-header { background: #2c3e2d; color: #f0ebe0; padding: 28px 24px 28px; display: flex; justify-content: space-between; align-items: center; }
     .home-app-name { font-family: 'Fraunces', serif; font-size: 34px; font-weight: 700; letter-spacing: -1px; line-height: 1.1; }
     .home-app-sub { font-size: 13px; opacity: 0.6; margin-top: 6px; }
     .home-modules { padding: 24px 16px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
@@ -348,9 +348,9 @@ function renderHome() {
 
   var logoEl;
   if (state.appIcon) {
-    logoEl = h("img", {src: state.appIcon, style:{width:"52px",height:"52px",borderRadius:"12px",objectFit:"cover",flexShrink:"0"}});
+    logoEl = h("img", {src: state.appIcon, style:{width:"72px",height:"72px",borderRadius:"14px",objectFit:"cover",flexShrink:"0"}});
   } else {
-    logoEl = h("img", {src:"favicon.png", style:{width:"52px",height:"52px",borderRadius:"12px",objectFit:"cover",flexShrink:"0",opacity:"0.9"}});
+    logoEl = h("img", {src:"favicon.png", style:{width:"72px",height:"72px",borderRadius:"14px",objectFit:"cover",flexShrink:"0",opacity:"0.9"}});
   }
   app.appendChild(h("div", {class:"home-header"},
     h("div", {style:{display:"flex",alignItems:"center",gap:"14px",flex:"1"}},
