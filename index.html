@@ -292,38 +292,52 @@ function renderThumbnails() {
   }
 }
 
+var pdfLoadingTask = null;
+
 function openPDF(url, title) {
+  // Laufenden Ladevorgang abbrechen
+  if (pdfLoadingTask) {
+    pdfLoadingTask.destroy();
+    pdfLoadingTask = null;
+  }
+
+  // State vollständig zurücksetzen
+  pdfDoc = null;
+  pdfCurrentPage = 1;
+  pdfRendering = false;
+
+  // UI zurücksetzen
   document.getElementById("pdf-title").textContent = title;
-  document.getElementById("pdf-loading").style.display = "block";
-  document.getElementById("pdf-canvas-wrap").innerHTML = '<div class="pdf-loading" id="pdf-loading">PDF wird geladen...</div>';
+  document.getElementById("pdf-canvas-wrap").innerHTML = '<div class="pdf-loading">PDF wird geladen...</div>';
   document.getElementById("pdf-thumb-bar").innerHTML = "";
   document.getElementById("pdf-total").textContent = "?";
   document.getElementById("pdf-page-input").value = 1;
   document.getElementById("pdf-prev").disabled = true;
   document.getElementById("pdf-next").disabled = true;
   document.getElementById("pdf-overlay").classList.remove("hidden");
-  pdfDoc = null;
-  pdfCurrentPage = 1;
-  pdfRendering = false;
 
   loadPdfJs(function() {
-    pdfjsLib.getDocument(url).promise.then(function(doc) {
+    pdfLoadingTask = pdfjsLib.getDocument(url);
+    pdfLoadingTask.promise.then(function(doc) {
+      pdfLoadingTask = null;
       pdfDoc = doc;
       document.getElementById("pdf-total").textContent = doc.numPages;
       document.getElementById("pdf-next").disabled = doc.numPages <= 1;
       renderThumbnails();
       renderPage(1);
     }).catch(function(e) {
-      document.getElementById("pdf-canvas-wrap").innerHTML = '<div class="pdf-loading">Fehler beim Laden des PDFs.<br>Bitte Verbindung prüfen.</div>';
+      pdfLoadingTask = null;
+      document.getElementById("pdf-canvas-wrap").innerHTML = '<div class="pdf-loading">Fehler beim Laden.<br>Bitte Verbindung prüfen.</div>';
     });
   });
 }
 
 function closePDF() {
-  document.getElementById("pdf-overlay").classList.add("hidden");
+  if (pdfLoadingTask) { pdfLoadingTask.destroy(); pdfLoadingTask = null; }
   pdfDoc = null;
   pdfCurrentPage = 1;
   pdfRendering = false;
+  document.getElementById("pdf-overlay").classList.add("hidden");
   document.getElementById("pdf-canvas-wrap").innerHTML = "";
   document.getElementById("pdf-thumb-bar").innerHTML = "";
   document.getElementById("pdf-total").textContent = "?";
