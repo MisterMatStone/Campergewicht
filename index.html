@@ -322,8 +322,14 @@ function openPDF(url, title) {
 function closePDF() {
   document.getElementById("pdf-overlay").classList.add("hidden");
   pdfDoc = null;
+  pdfCurrentPage = 1;
+  pdfRendering = false;
   document.getElementById("pdf-canvas-wrap").innerHTML = "";
   document.getElementById("pdf-thumb-bar").innerHTML = "";
+  document.getElementById("pdf-total").textContent = "?";
+  document.getElementById("pdf-page-input").value = 1;
+  document.getElementById("pdf-prev").disabled = true;
+  document.getElementById("pdf-next").disabled = true;
 }
 
 // ── GitHub API ───────────────────────────────────────────────────────────────
